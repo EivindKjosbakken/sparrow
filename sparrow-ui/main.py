@@ -48,8 +48,10 @@ class Model:
 def view(model):
     with st.sidebar:
         menuItem = option_menu(model.menuTitle,
-                               [model.option1, model.option2, model.option5, model.option6, model.option7, model.option8],
-                               icons=[model.icon1, model.icon2, model.icon5, model.icon6, model.icon7, model.icon8],
+                               [model.option1, model.option2, model.option5,
+                                   model.option6, model.option7, model.option8],
+                               icons=[model.icon1, model.icon2, model.icon5,
+                                      model.icon6, model.icon7, model.icon8],
                                menu_icon=model.menuIcon,
                                default_index=0,
                                styles={
@@ -67,8 +69,10 @@ def view(model):
     if menuItem == model.option2:
         if 'ui_width' not in st.session_state or 'device_type' not in st.session_state or 'device_width' not in st.session_state:
             # Get UI width
-            ui_width = st_js.st_javascript("window.innerWidth", key="ui_width_comp")
-            device_width = st_js.st_javascript("window.screen.width", key="device_width_comp")
+            ui_width = st_js.st_javascript(
+                "window.innerWidth", key="ui_width_comp")
+            device_width = st_js.st_javascript(
+                "window.screen.width", key="device_width_comp")
 
             if ui_width > 0 and device_width > 0:
                 # Add 20% of current screen width to compensate for the sidebar
@@ -100,8 +104,10 @@ def view(model):
     if menuItem == model.option5:
         if 'ui_width' not in st.session_state or 'device_type' not in st.session_state or 'device_width' not in st.session_state:
             # Get UI width
-            ui_width = st_js.st_javascript("window.innerWidth", key="ui_width_comp")
-            device_width = st_js.st_javascript("window.screen.width", key="device_width_comp")
+            ui_width = st_js.st_javascript(
+                "window.innerWidth", key="ui_width_comp")
+            device_width = st_js.st_javascript(
+                "window.screen.width", key="device_width_comp")
 
             if ui_width > 0 and device_width > 0:
                 # Add 20% of current screen width to compensate for the sidebar
@@ -126,8 +132,10 @@ def view(model):
     if menuItem == model.option6:
         if 'ui_width' not in st.session_state or 'device_type' not in st.session_state or 'device_width' not in st.session_state:
             # Get UI width
-            ui_width = st_js.st_javascript("window.innerWidth", key="ui_width_comp")
-            device_width = st_js.st_javascript("window.screen.width", key="device_width_comp")
+            ui_width = st_js.st_javascript(
+                "window.innerWidth", key="ui_width_comp")
+            device_width = st_js.st_javascript(
+                "window.screen.width", key="device_width_comp")
 
             if ui_width > 0 and device_width > 0:
                 # Add 20% of current screen width to compensate for the sidebar

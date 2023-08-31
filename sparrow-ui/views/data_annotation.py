@@ -104,10 +104,13 @@ class DataAnnotation:
                                                                 index=annotation_index,
                                                                 help=model.annotation_selection_help)
 
-            annotation_index = self.get_annotation_index(annotation_selection, file_names)
+            annotation_index = self.get_annotation_index(
+                annotation_selection, file_names)
 
-            file_extension = self.get_file_extension(annotation_selection, 'docs/images/')
-            model.img_file = f"docs/images/{annotation_selection}" + file_extension
+            file_extension = self.get_file_extension(
+                annotation_selection, 'docs/images/')
+            model.img_file = f"docs/images/{annotation_selection}" + \
+                file_extension
             model.rects_file = f"docs/json/{annotation_selection}.json"
 
             completed_check = st.empty()
@@ -120,22 +123,29 @@ class DataAnnotation:
             st.subheader(model.subheader_2)
 
             with st.form("upload-form", clear_on_submit=True):
-                uploaded_file = st.file_uploader(model.upload_button_text_desc, accept_multiple_files=False,
-                                                 type=['png', 'jpg', 'jpeg'],
-                                                 help=model.upload_help)
+                # uploaded_file = st.file_uploader(model.upload_button_text_desc, accept_multiple_files=True,  # changed False -> True
+                #                                  #  type=['png', 'jpg', 'jpeg'],
+                #                                  help=model.upload_help)
+
+                # NOTE changed this so multiple files could be uploaded
+                uploaded_files = st.file_uploader(
+                    model.upload_button_text_desc, accept_multiple_files=True)
+
                 submitted = st.form_submit_button(model.upload_button_text)
+                for uploaded_file in uploaded_files:
+                    if submitted and uploaded_file is not None:
+                        ret = self.upload_file(uploaded_file)
 
-                if submitted and uploaded_file is not None:
-                    ret = self.upload_file(uploaded_file)
+                        if ret is not False:
+                            file_names = self.get_existing_file_names(
+                                'docs/images/')
 
-                    if ret is not False:
-                        file_names = self.get_existing_file_names('docs/images/')
-
-                        annotation_index = self.get_annotation_index(annotation_selection, file_names)
-                        annotation_selection = placeholder_upload.selectbox(model.annotation_text, file_names,
-                                                                            index=annotation_index,
-                                                                            help=model.annotation_selection_help)
-                        st.session_state['annotation_index'] = annotation_index
+                            annotation_index = self.get_annotation_index(
+                                annotation_selection, file_names)
+                            annotation_selection = placeholder_upload.selectbox(model.annotation_text, file_names,
+                                                                                index=annotation_index,
+                                                                                help=model.annotation_selection_help)
+                            st.session_state['annotation_index'] = annotation_index
 
         # st.title(model.pageTitle + " - " + annotation_selection)
 
@@ -164,7 +174,8 @@ class DataAnnotation:
                 st.session_state["annotation_done"] = True
 
         with completed_check:
-            annotation_done = st.checkbox(model.completed_text, help=model.completed_help, key="annotation_done")
+            annotation_done = st.checkbox(
+                model.completed_text, help=model.completed_help, key="annotation_done")
             if annotation_done:
                 saved_state['meta']['version'] = "v1.0"
             else:
@@ -174,7 +185,8 @@ class DataAnnotation:
                 json.dump(saved_state, f, indent=2)
             st.session_state[model.rects_file] = saved_state
 
-        assign_labels = st.checkbox(model.assign_labels_text, True, help=model.assign_labels_help)
+        assign_labels = st.checkbox(
+            model.assign_labels_text, True, help=model.assign_labels_help)
         mode = "transform" if assign_labels else "rect"
 
         docImg = Image.open(model.img_file)
@@ -188,23 +200,30 @@ class DataAnnotation:
                                                                           device_width)
 
             if number_of_columns > 1:
-                col1, col2 = st.columns([number_of_columns, 10 - number_of_columns])
+                col1, col2 = st.columns(
+                    [number_of_columns, 10 - number_of_columns])
                 with col1:
-                    result_rects = self.render_doc(model, docImg, saved_state, mode, canvas_width, doc_height, doc_width)
+                    result_rects = self.render_doc(
+                        model, docImg, saved_state, mode, canvas_width, doc_height, doc_width)
                 with col2:
                     tab = st.radio("Select", ["Mapping", "Grouping", "Ordering"], horizontal=True,
                                    label_visibility="collapsed")
                     if tab == "Mapping":
-                        self.render_form(model, result_rects, data_processor, annotation_selection)
+                        self.render_form(model, result_rects,
+                                         data_processor, annotation_selection)
                     elif tab == "Grouping":
                         self.group_annotations(model, result_rects)
                     elif tab == "Ordering":
-                        self.order_annotations(model, model.labels, model.groups, result_rects)
+                        self.order_annotations(
+                            model, model.labels, model.groups, result_rects)
             else:
-                result_rects = self.render_doc(model, docImg, saved_state, mode, canvas_width, doc_height, doc_width)
-                tab = st.radio("Select", ["Mapping", "Grouping"], horizontal=True, label_visibility="collapsed")
+                result_rects = self.render_doc(
+                    model, docImg, saved_state, mode, canvas_width, doc_height, doc_width)
+                tab = st.radio(
+                    "Select", ["Mapping", "Grouping"], horizontal=True, label_visibility="collapsed")
                 if tab == "Mapping":
-                    self.render_form(model, result_rects, data_processor, annotation_selection)
+                    self.render_form(model, result_rects,
+                                     data_processor, annotation_selection)
                 else:
                     self.group_annotations(model, result_rects)
 
@@ -246,7 +265,8 @@ class DataAnnotation:
                                           data_processor)
 
                     with toolbar:
-                        submit = st.form_submit_button(model.save_text, type="primary")
+                        submit = st.form_submit_button(
+                            model.save_text, type="primary")
                         if submit:
                             for word in result_rects.rects_data['words']:
                                 if len(word['value']) > 1000:
@@ -273,20 +293,22 @@ class DataAnnotation:
     def render_form_view(self, words, labels, result_rects, data_processor):
         data = []
         for i, rect in enumerate(words):
-            group, label = rect['label'].split(":", 1) if ":" in rect['label'] else (None, rect['label'])
+            group, label = rect['label'].split(
+                ":", 1) if ":" in rect['label'] else (None, rect['label'])
             data.append({'id': i, 'value': rect['value'], 'label': label})
         df = pd.DataFrame(data)
 
         formatter = {
             'id': ('ID', {**PINLEFT, 'hide': True}),
             'value': ('Value', {**PINLEFT, 'editable': True}),
-            'label': ('Label', {**PINLEFT,
-                                'width': 80,
-                                'editable': True,
-                                'cellEditor': 'agSelectCellEditor',
-                                'cellEditorParams': {
-                                    'values': labels
-                                }})
+            # 'label': ('Label', {**PINLEFT, #TODO CHANGING TO FIT MY NEEDS
+            #                     'width': 80,
+            #                     'editable': True,
+            #                     'cellEditor': 'agSelectCellEditor',
+            #                     'cellEditorParams': {
+            #                         'values': labels
+            #                     }})
+            'label': ('Row ID', {**PINLEFT, 'editable': True}),
         }
 
         go = {
@@ -315,7 +337,8 @@ class DataAnnotation:
         for i, rect in enumerate(words):
             value = data[i][1]
             label = data[i][2]
-            data_processor.update_rect_data(result_rects.rects_data, i, value, label)
+            data_processor.update_rect_data(
+                result_rects.rects_data, i, value, label)
 
     def canvas_available_width(self, ui_width, doc_width, device_type, device_width):
         doc_width_pct = (doc_width * 100) / ui_width
@@ -366,7 +389,8 @@ class DataAnnotation:
             with open(os.path.join("docs/images/", uploaded_file.name), "wb") as f:
                 f.write(uploaded_file.getbuffer())
 
-            img_file = Image.open(os.path.join("docs/images/", uploaded_file.name))
+            img_file = Image.open(os.path.join(
+                "docs/images/", uploaded_file.name))
 
             annotations_json = {
                 "meta": {
@@ -395,12 +419,11 @@ class DataAnnotation:
         # get list of files, excluding hidden files
         files = [f for f in os.listdir(dir_name) if not f.startswith('.')]
         for f in files:
-            if file_name is not  None and os.path.splitext(f)[0] == file_name:
+            if file_name is not None and os.path.splitext(f)[0] == file_name:
                 return os.path.splitext(f)[1]
 
     def get_annotation_index(self, file, files_list):
         return files_list.index(file)
-
 
     def group_annotations(self, model, result_rects):
         with st.form(key="grouping_form"):
@@ -430,13 +453,15 @@ class DataAnnotation:
                 rows = response['selected_rows']
 
                 with toolbar:
-                    submit = st.form_submit_button(model.save_text, type="primary")
+                    submit = st.form_submit_button(
+                        model.save_text, type="primary")
                     if submit and len(rows) > 0:
                         # check if there are gaps in the selected rows
                         if len(rows) > 1:
                             for i in range(len(rows) - 1):
                                 if rows[i]['id'] + 1 != rows[i + 1]['id']:
-                                    st.error(model.selection_must_be_continuous)
+                                    st.error(
+                                        model.selection_must_be_continuous)
                                     return
 
                         words = result_rects.rects_data['words']
@@ -455,7 +480,6 @@ class DataAnnotation:
                         y1_min = min([coord['y1'] for coord in coords])
                         x2_max = max([coord['x2'] for coord in coords])
                         y2_max = max([coord['y2'] for coord in coords])
-
 
                         words[rows[0]['id']]['value'] = new_word
                         words[rows[0]['id']]['rect'] = {
@@ -480,7 +504,6 @@ class DataAnnotation:
                         st.session_state[model.rects_file] = result_rects.rects_data
                         st.experimental_rerun()
 
-
     def order_annotations(self, model, labels, groups, result_rects):
         if result_rects is not None:
             self.action_event = None
@@ -490,8 +513,10 @@ class DataAnnotation:
             for i, rect in enumerate(words):
                 if rect['label'] != "":
                     # split string into two variables, assign None to first variable if no split is found
-                    group, label = rect['label'].split(":", 1) if ":" in rect['label'] else (None, rect['label'])
-                    data.append({'id': i, 'value': rect['value'], 'label': label, 'group': group})
+                    group, label = rect['label'].split(
+                        ":", 1) if ":" in rect['label'] else (None, rect['label'])
+                    data.append(
+                        {'id': i, 'value': rect['value'], 'label': label, 'group': group})
                     idx_list.append(i)
             df = pd.DataFrame(data)
 
@@ -596,10 +621,12 @@ class DataAnnotation:
                             return
                         # swap row upwards in the array
                         if idx_option == "":
-                            words[row_id], words[row_id - 1] = words[row_id - 1], words[row_id]
+                            words[row_id], words[row_id -
+                                                 1] = words[row_id - 1], words[row_id]
                         else:
                             for i in range(1000):
-                                words[row_id], words[row_id - 1] = words[row_id - 1], words[row_id]
+                                words[row_id], words[row_id -
+                                                     1] = words[row_id - 1], words[row_id]
                                 row_id -= 1
                                 if row_id == idx_option:
                                     break
@@ -619,10 +646,12 @@ class DataAnnotation:
                             return
                         # swap row downwards in the array
                         if idx_option == "":
-                            words[row_id], words[row_id + 1] = words[row_id + 1], words[row_id]
+                            words[row_id], words[row_id +
+                                                 1] = words[row_id + 1], words[row_id]
                         else:
                             for i in range(1000):
-                                words[row_id], words[row_id + 1] = words[row_id + 1], words[row_id]
+                                words[row_id], words[row_id +
+                                                     1] = words[row_id + 1], words[row_id]
                                 row_id += 1
                                 if row_id == idx_option:
                                     break
@@ -647,7 +676,6 @@ class DataAnnotation:
                     json.dump(result_rects.rects_data, f, indent=2)
                 st.session_state[model.rects_file] = result_rects.rects_data
                 st.experimental_rerun()
-
 
     def export_labels(self, model):
         path_from = os.path.join("docs/json/")
