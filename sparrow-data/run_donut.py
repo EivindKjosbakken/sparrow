@@ -14,6 +14,7 @@ def main():
 
     # copy JSON files from src to dst
     files = os.listdir(src_dir_json)
+
     for f in files:
         src_file = os.path.join(src_dir_json, f)
         dst_file = os.path.join(dst_dir_json, f)
@@ -36,10 +37,12 @@ def main():
     # split files_list array into 3 parts, 85% train, 10% validation, 5% test
     train_files_list = files_list[:int(len(files_list) * 0.85)]
     print("Train set size:", len(train_files_list))
-    validation_files_list = files_list[int(len(files_list) * 0.85):int(len(files_list) * 0.95)]
+    validation_files_list = files_list[int(
+        len(files_list) * 0.85):int(len(files_list) * 0.95)]
     print("Validation set size:", len(validation_files_list))
     test_files_list = files_list[int(len(files_list) * 0.95):]
     print("Test set size:", len(test_files_list))
+    # validation_files_list = test_files_list #TODO REMOVE AFTER; ONLY FOR TESTING SINCE DATA WAS TOO LITTLE
 
     metadata_generator = DonutMetadataGenerator()
     metadata_generator.generate(base_path, train_files_list, "train")
@@ -49,6 +52,7 @@ def main():
     # Generate dataset
     dataset_generator = DonutDatasetGenerator()
     dataset_generator.generate(base_path)
+
 
 if __name__ == '__main__':
     main()

@@ -44,3 +44,9 @@ sparrow-plugin-ui/.idea/misc.xml
 sparrow-plugin-ui/.idea/modules.xml
 sparrow-plugin-ui/.idea/sparrow-plugin-ui.iml
 sparrow-plugin-ui/.idea/vcs.xml
+
+
+*.jpg
+*.png
+*.jsonl
+*json
