@@ -53,6 +53,8 @@ def getMenuListAndTotal(jsonObj):
         return None, None
     maxRow = max(list(uniqueRowLabels)) #to prevent adding the total as a menu item
     
+    validLineArr = [] #for storing all words and their row and category
+    currTotPrice = 0
     for rowLabel in uniqueRowLabels:
         #find item with rowLabel
         items = []
@@ -65,16 +67,22 @@ def getMenuListAndTotal(jsonObj):
         else:
             productBox, priceBox = items[1][0], items[0][0]
 
-        if (rowLabel == maxRow): #last row is the total, dont want to add that
+
+        if (rowLabel == maxRow and float(priceBox["value"].replace(",", ".")) >= currTotPrice): #last row is the total, dont want to add that. Have extra check for the fact that it is the total with the tot price check!
             total = priceBox["value"]
         else:
             menuList.append({"nm": productBox["value"], "cnt": "", "price": priceBox["value"]})
+        currTotPrice += float(priceBox["value"].replace(",","."))
+        
+        productBoxTemp = getTempFromBox(productBox, isProduct=True)
+        priceBoxTemp = getTempFromBox(priceBox, isProduct=False)
+        validLineArr.append(productBoxTemp)
+        validLineArr.append(priceBoxTemp)
 
-        #add bounding boxes
 
-    return menuList, total
+    return menuList, total, validLineArr
 
-def getTempFromBox(box):
+def getTempFromBox(box, isProduct):
     #if point1 is bot left, point2 is bot right ,point3 is top right, point4 is top left
     x4,x2,y4,y2 = box["rect"]["x1"], box["rect"]["x2"], box["rect"]["y1"], box["rect"]["y2"] #we have bot left and top right corner
     x1,y1 = x4, y2
@@ -83,6 +91,11 @@ def getTempFromBox(box):
     x2,y2,x3,y3 = x3,y3,x2,y2
     #swap 1 and 4
     x1,y1,x4,y4 = x4,y4,x1,y1
+
+    if (isProduct):
+        category = "menu.nm"
+    else:
+        category = "menu.price"
 
     temp = {"words" : [{"quad": 
             {""
@@ -95,10 +108,10 @@ def getTempFromBox(box):
             "x4": x4,
             "y2": y2},
             "is_key": 0, #always 0
-            "row_id": box["label"],
+            "row_id": int(box["label"]),
             "text": box["value"]
             }],
-            "category": "menu",
+            "category": category,
             "group_id": box["label"],
             "sub_group_id": 0, #always 0
             }
@@ -134,15 +147,12 @@ def prepareReceipt(receipt, index):
         return None
     # newJsonObj["meta"] = jsonObj["meta"]  #NOTE not needed
     
-    menuList, total = getMenuListAndTotal(jsonObj)
+    menuList, total, validLineArr = getMenuListAndTotal(jsonObj)
     if (menuList == None):
         return None
     newJsonObj["gt_parse"] = {"menu":menuList, "total": {"total_price": total}} #adding menu list and total
 
-    validLineArr = []
-    for box in jsonObj["words"]:
-        temp = getTempFromBox(box)
-        validLineArr.append(temp)
+    #getting info for "valid_line" key
         
     newJsonObj["valid_line"] = validLineArr
     newJsonObj["roi"] = dict()
@@ -151,7 +161,7 @@ def prepareReceipt(receipt, index):
 
     imageName = receipt.split(".")[0]+".jpg"
     imgPath = getFullImgPath(imageName)
-    img = Image.open(imgPath)
+    # img = Image.open(imgPath)
     fullDict = {"file_name":str(index)+".jpg", "ground_truth": json.dumps(newJsonObj)}
     
     return fullDict
