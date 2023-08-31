@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "version": "v0.1",
+    "split": "train",
+    "image_id": 4,
+    "image_size": {
+      "width": 3024,
+      "height": 2680
+    }
+  },
+  "words": [
+    {
+      "rect": {
+        "x1": 315,
+        "y1": 42,
+        "x2": 2320,
+        "y2": 578
+      },
+      "value": "LETTMELK 0,5 % 18,90 LETTMELK 0,5 % 18,90 HAKKEDE TOMATER 12,40 HAKKEDE TOMATER 12,40 MAKRELLFILET 21,90",
+      "label": "1"
+    },
+    {
+      "rect": {
+        "x1": 589,
+        "y1": 142,
+        "x2": 596,
+        "y2": 150
+      },
+      "value": "",
+      "label": ""
+    }
+  ]
+}
