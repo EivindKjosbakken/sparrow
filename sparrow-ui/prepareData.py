@@ -142,10 +142,10 @@ def prepareReceipt(receipt, index):
     newJsonObj = {}
 
     width, height = jsonObj["meta"]["image_size"]["width"], jsonObj["meta"]["image_size"]["height"]
-    if (width > height):
-        print("IGNORING RECEIPT SINCE IT IS NOT IN PORTRAIT MODE")
-        return None
-    # newJsonObj["meta"] = jsonObj["meta"]  #NOTE not needed
+    # if (width > height): #NOTE not ignoring receipts, can be wider than high due to cutting
+    #     print("IGNORING RECEIPT SINCE IT IS NOT IN PORTRAIT MODE")
+    #     return None
+    # # newJsonObj["meta"] = jsonObj["meta"]  #NOTE not needed
     
     menuList, total, validLineArr = getMenuListAndTotal(jsonObj)
     if (menuList == None):
@@ -160,9 +160,10 @@ def prepareReceipt(receipt, index):
     newJsonObj["dontcare"] = dict()
 
     imageName = receipt.split(".")[0]+".jpg"
-    imgPath = getFullImgPath(imageName)
+    print("IMAFGENAME :" , imageName)
+    # imgPath = getFullImgPath(imageName)
     # img = Image.open(imgPath)
-    fullDict = {"file_name":str(index)+".jpg", "ground_truth": json.dumps(newJsonObj)}
+    fullDict = {"file_name":imageName, "ground_truth": json.dumps(newJsonObj)}
     
     return fullDict
         
@@ -189,11 +190,11 @@ for subfolder in ["train", "validation", "test"]:
 #train
 with jsonlines.open(f"{DATA_FOLDER_NAME}/train/metadata.jsonl", "w") as writer:
     writer.write_all(train_dataset)
+
 #push all images to folder
 for data in tqdm(train_dataset):
     imgName = data["file_name"]
     imgPath = getFullImgPath(imgName)
-    print(imgName)
     img = Image.open(imgPath)
     img.save(f"{DATA_FOLDER_NAME}/train/{imgName}")
 
